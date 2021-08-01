@@ -1,4 +1,8 @@
 from PIL import Image, ImageFilter
+from matplotlib import pyplot
 
-im = Imega.open('sample.jpg')
+im = Image.open('sample.jpg')
 
+img_mod = where(im<120,0,im)
+
+pyplot.imshow(img_mod)
