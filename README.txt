@@ -1,7 +1,4 @@
-はじめてのGit
+Python Imaging Library の使い方を学ぶ
 
-目次
-1 初めてのGit
-2 Gitを導入する
-3 Gitのチュートリアル
-4 branch , branch --vva, checkout 
+1 画像の読み込み
+2 画像から情報を取り出す
