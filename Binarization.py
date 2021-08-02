@@ -16,7 +16,6 @@ Start
 #from PIL import Image
 import matplotlib.pyplot as plt
 import numpy as np
-import cv2
 
 
 datafile = './3ions' #Loading Text Image
@@ -42,8 +41,6 @@ LOADING Text Image and Binarization
 
 data = np.loadtxt(datafile) 
 data_binary = np.where(data<thre, binary_min, binary_max)
-
-
 
 """
 DISPLAY Text Image(Raw and Bi) using matplotlib.pyplot
