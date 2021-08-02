@@ -1,8 +1,12 @@
-from PIL import Image, ImageFilter
+from PIL import Image
 from matplotlib import pyplot
+import numpy as np
+
+thre = 50
 
 im = Image.open('sample.jpg')
+im_list  = np.asarray(im)
 
-img_mod = where(im<120,0,im)
+im_list_mod = np.where(im_list<thre, 0, 255)
 
-pyplot.imshow(img_mod)
+pyplot.imshow(im_list_mod)
