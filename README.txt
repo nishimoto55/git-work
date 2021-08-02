@@ -1,4 +1,4 @@
-Python Imaging Library ‚Ìg‚¢•û‚ğŠw‚Ô
+using Pillow(Python Imaging Library : PIL) + Numpy 
 
-1 ‰æ‘œ‚Ì“Ç‚İ‚İ
-2 ‰æ‘œ‚©‚çî•ñ‚ğæ‚èo‚·
+1 Pillow is Reading datafile as picture.
+2 Numpy is analysing and manipulating data.
