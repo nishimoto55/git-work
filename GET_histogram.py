@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Aug  2 18:21:57 2021
+2021.8.3 Nishimoto - getting histogram with OpenCV
 
-@author: 井上 凌太
 """
 
 import numpy as np

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 2021.8.2 Nishimoto  - treatment of Text Image using Numpy -
-2021.8.3 Nishimoto - getting histogram with OpenCV
+
 
 
 
