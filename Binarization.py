@@ -1,74 +1,132 @@
 # -*- coding: utf-8 -*-
 """
 2021.8.2 Nishimoto  - treatment of Text Image using Numpy -
-
-
+2021.8.4 Nishimoto
 
 
 Start
-
 """
 #Reading Library
 import matplotlib.pyplot as plt
 import numpy as np
 import cv2
 
-
-datafile = './3ions' #Loading Text Image
-
 """
 GLOBAL VARIABLES
 """
+#const.
 #binarization
-thre = 30 #Threshold
-binary_min = 0 #minimum
-binary_max = 255 #maximum
-#visualize binarization using matplotlib 
-y_min = 1024 #Default 1024
-y_max = 0 #Default 0
-FontSize = 18
+thre = 70 #Threshold
+FontSize = 14
+
+#Loading
+datafile = './TextImage/string2'
+#datafile = './TextImage/zigzag' 
+
+data = np.loadtxt(datafile)
+cv2.imwrite('./JPEG/sample.jpg',data)
+
+"""
+Function
+"""
+#Gray Scale
+def rgb2gray(img):
+    _img = img.copy().astype(np.float32)
+    gray = _img[..., 0] * 0.2126 + _img[..., 1] * 0.7152 + _img[..., 2] * 0.0722
+    gray = np.clip(gray, 0, 255)
+    return gray.astype(np.uint8)
+
+#Binarization
+def binary(img,th):
+    _img = img.copy()
+    _img = np.minimum(_img // th, 1)*255
+    return _img.astype(np.uint8)
+
+#diplay histogram
+def histogram(img,img2):
+    plt.figure(figsize = (12,3))
+    #1
+    plt.subplot(1,3,1)
+    plt.hist(image_origin.ravel(), bins=255, rwidth=0.8, range=(0, 255))
+    plt.title('origin', size = FontSize)
+    plt.ylim(0,10000)
+    plt.xlabel('pixel',size = FontSize); plt.ylabel('appearance', size = FontSize)
+    plt.title('origin', size = FontSize)
+    #2
+    plt.subplot(1,3,2)
+    plt.title('gray scale' , size = FontSize)
+    plt.hist(img.ravel(), bins=255, rwidth=0.8, range=(0, 255))
+    plt.ylim(0,10000)
+    plt.xlabel('pixel',size = FontSize); plt.ylabel('appearance', size = FontSize)
+    plt.title('normalize', size = FontSize)
+    #3
+    plt.subplot(1,3,3)
+    plt.title('binarization' , size = FontSize)
+    plt.hist(img2.ravel(), bins=255, rwidth=0.8, range=(0, 255))
+    plt.ylim(0,10000)
+    plt.xlabel('pixel',size = FontSize); plt.ylabel('appearance', size = FontSize)
+
+    plt.tight_layout()
+
+    plt.show()
+
+#normalization histogram
+def hist_normalize(img, a, b):
+    c, d = img.min(), img.max()
+    # if c <= xin < d
+    out = (b - a) / (d - c) * (img - c) + a
+    # if xin < c
+    out[img < c] = a
+    # if xin > d
+    out[img > d] = b
+    return np.clip(out, 0, 255).astype(np.uint8)
+
 
 
 """
-LOADING Text Image and Binarization
+Main
 """
-#type is <class 'numpy.ndarray' > data and data_binary
+#type of image_* is numpy.ndarray
 
-data = np.loadtxt(datafile) 
-data_binary = np.where(data<thre, binary_min, binary_max)
+image_origin = cv2.imread('./JPEG/sample.jpg')
+image_gray = rgb2gray(image_origin)
+image_hist_norm = hist_normalize(image_gray,a=0,b=255)
 
-cv2.imwrite('sample.jpg',data)
+image_binary = binary(image_hist_norm, thre)
+
+#histogram(image_hist_norm,image_binary)
 
 """
-
-DISPLAY Text Image(Raw and Bi) using matplotlib.pyplot
-
-plt.rcParams['font.family'] = 'Times New Roman'
+display
+"""
+#analysis
+plt.figure(figsize = (12,3))
 #1
-plt.subplot(2,1,1)
-plt.ylim(y_min,y_max)
+plt.subplot(1,3,1)
+plt.title('gray scale', size = FontSize)
 plt.axis('off')
-plt.title('Raw Text Image',size = FontSize)
-plt.imshow(data)
+plt.imshow(image_gray,cmap = 'viridis')
+plt.colorbar()
 #2
-plt.subplot(2,1,2)
-plt.ylim(y_min,y_max)
+plt.subplot(1,3,2)
+plt.title('normalize' , size = FontSize)
 plt.axis('off')
-plt.title('Binarization', size = FontSize)
-plt.imshow(data_binary)
+plt.imshow(image_hist_norm,cmap = 'viridis')
+plt.colorbar()
+#3
+plt.subplot(1,3,3)
+plt.title('binarization', size = FontSize)
+plt.axis('off')
+plt.imshow(image_binary, cmap = 'viridis')
+plt.colorbar()
 
 plt.tight_layout()
 
-"""
+plt.show()
 
+count_lst, hir_lst = cv2.findContours(image_binary, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+print(len(count_lst))
 
-"""
-treatment of jpeg
-"""
-#im = Image.open('sample.jpg') #'type is <class 'PIL.JpegImagePlugin.JpegImageFile'>'
-#im_list  = np.asarray(im) #type is <class 'numpy.ndarray' >
-#im_list_mod = np.where(im_list<thre, 0, 255)
-#pyplot.imshow(im_list)
-
-
-
+for cnt in count_lst:
+    Find_ions = cv2.drawContours(image_binary, [cnt], -1, (255,0,0), 1)
+plt.imshow(Find_ions)

@@ -1,5 +1,9 @@
-using Pillow(Python Imaging Library : PIL) + Numpy + OpenCV 
+イオン捕獲画像に対する画像処理
 
-1 Pillow is Loading datafile(Text Image) as picture.
-2 Numpy is analysing and manipulating data.
-3 OpenCV make Histogram of TextImageFile to determine threshold for binarization
+OpenCVとNumpyを軸に画像処理プログラムの作成を行う．
+最終的な目標はLabVIEWとの連携により，リアルタイムに画像処理を行うことである．
+
+知りたいこと
+(1)イオンの位置とイオン間の距離の計測
+(2)理想的な電場との比較から，イオン位置における浮遊電場を算出
+(3)補正電圧の印加
