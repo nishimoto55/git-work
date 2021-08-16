@@ -1,31 +1,32 @@
 # -*- coding: utf-8 -*-
 """
-2021.8.2 Nishimoto  - treatment of Text Image using Numpy -
+2021.8.2 Nishimoto - treatment of Text Image using Numpy -
 2021.8.4 Nishimoto
 2021.8.5 Nishimoto - Detection ions -
-
-
-Start
 """
-#Library
+# Module
+import glob
 import matplotlib.pyplot as plt
 import numpy as np
 import cv2
-
 """
 GLOBAL VARIABLES
 """
 #const.
-#binarization
-thre = 100 #Threshold
-FontSize = 14
+circle_thre = 30 #threshold for determining number of ions
+thre = 120  #Threshold for binarization
+FontSize = 14 #For graph
+l=2 #File index (e.g.) -> files[l]
 
-#Loading
-#datafile = './TextImage/string2'
-datafile = './TextImage/zigzag'
-#datafile = './TextImage/array'
+#Loading Raw-File
+files = glob.glob('./TextImage/s*')
 
-data = np.loadtxt(datafile)
+print('files is ...')
+for file in files:
+    print(file)
+
+#textimage2jpg
+data = np.loadtxt(files[l])
 cv2.imwrite('./JPEG/sample.jpg',data)
 
 """
@@ -132,9 +133,10 @@ def display(img1,img2,img3):
     plt.savefig('./JPEG/gasyo_image.jpg',
             bbox_inches='tight',
             dpi = 300)
-    plt.tight_layout(); plt.show()  
+    plt.tight_layout(); plt.show()
+    
 """
-Main
+start Main
 """
 #Load raw-image and gray scale, normalization, binarization
 image_origin = cv2.imread('./JPEG/sample.jpg')
@@ -144,25 +146,24 @@ image_binary = binary(image_hist_norm, thre)
 
 #origin()
 
-#HISTOGRAM
+### show HISTOGRAM
 #histogram(image_gray,image_hist_norm,image_binary)
 
-#image
+### show image
 #display(image_gray,image_hist_norm,image_binary)
-
 
 
 #イオンの検出
 count_lst, hir_lst = cv2.findContours(image_binary, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-
+print('position of ions is ...')
 img = image_origin
 k=0 #count variable
 for i, cnt in enumerate(count_lst):
         # 輪郭の面積を計算する。
         area = cv2.contourArea(cnt)
         #　抽出する範囲を指定
-        if area > -1 and area < 1000:
+        if area > circle_thre and area < 10000:
             #最小外接円を計算する
             (x,y),radius = cv2.minEnclosingCircle(cnt)
             center = (int(x),int(y))
@@ -170,14 +171,14 @@ for i, cnt in enumerate(count_lst):
             cv2.circle(img,center,int(radius),(0,0,255),5)
             #中心点に円を描画
             cv2.circle(img,center,1,(0,255,0),1)
-            print(str(k+1) + 'th (x,y) : ' + str(center))
+            print(str(k+1) + 'th (x,y) : ' ,'{:.3f}'.format(x),'{:.3f}'.format(y))
+            print('circle area is ' + str(area))
             k=k+1
 
-print('number of ions is ' + str(k))
+print('number of ions is ' + str(k) + '.')
 
 cv2.imwrite('./JPEG/out.jpg',img)
-           
-#キー入力を待つ
-#cv2.waitKey(0)
-#全ての開いたウインドウ閉じる
-#cv2.destroyAllWindows()
+   
+"""
+end Main
+"""
