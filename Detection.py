@@ -16,7 +16,7 @@ GLOBAL VARIABLES
 circle_thre = 30 #threshold for determining number of ions
 thre = 120  #Threshold for binarization
 FontSize = 14 #For graph
-l=2 #File index (e.g.) -> files[l]
+l=4 #File index (e.g.) -> files[l]
 
 #Loading Raw-File
 files = glob.glob('./TextImage/s*')
@@ -156,6 +156,8 @@ image_binary = binary(image_hist_norm, thre)
 #イオンの検出
 count_lst, hir_lst = cv2.findContours(image_binary, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
+list = np.array([[0]*2]*6)
+
 print('position of ions is ...')
 img = image_origin
 k=0 #count variable
@@ -170,12 +172,15 @@ for i, cnt in enumerate(count_lst):
             #輪郭の円を描画
             cv2.circle(img,center,int(radius),(0,0,255),5)
             #中心点に円を描画
+            list[k][0] = int(x)
+            list[k][1] = int(y)
             cv2.circle(img,center,1,(0,255,0),1)
             print(str(k+1) + 'th (x,y) : ' ,'{:.3f}'.format(x),'{:.3f}'.format(y))
             print('circle area is ' + str(area))
             k=k+1
 
-print('number of ions is ' + str(k) + '.')
+for i in list:
+    print(i)
 
 cv2.imwrite('./JPEG/out.jpg',img)
    
