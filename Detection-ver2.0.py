@@ -5,14 +5,22 @@ import glob
 import matplotlib.pyplot as plt
 import numpy as np
 import cv2
+
 """
 GLOBAL VARIABLES
 """
 #definite const.
-circle_thre = 30 #threshold for determining number of ions
+circle_thre = 40 #threshold for determining number of ions
 thre = 120  #Threshold for binarization
 FontSize = 14 #For graph
-l=4 #File index (e.g.) -> files[l]
+l=2 #File index (e.g.) -> files[l]
+#ROI
+xmin,xmax = 0,1280
+ymin,ymax = 475 ,625
+#Physics Const.
+e = 1.60217662 * 10 ** (-19)
+A = 2.30707757*10**(-28)
+
 
 #Loading Raw-File
 files = glob.glob('./TextImage/s*')
@@ -24,6 +32,10 @@ for file in files:
 #textimage2jpg (one file only)
 data = np.loadtxt(files[l])
 cv2.imwrite('./work/work.jpg',data)
+
+#basis img
+image_origin = cv2.imread('./work/work.jpg')
+
 
 """
 Function
@@ -44,7 +56,7 @@ def binary(img,th):
 #normalization histogram
 def hist_normalize(img, a, b):
     c, d = img.min(), img.max()
-    # if c <= xin < d
+    
     out = (b - a) / (d - c) * (img - c) + a
     # if xin < c
     out[img < c] = a
@@ -52,15 +64,96 @@ def hist_normalize(img, a, b):
     out[img > d] = b
     return np.clip(out, 0, 255).astype(np.uint8)
 
-    #イオンの検出
-def CountIons():
+#イオン位置における電場の導出とその図示
+def ElectroField(ion_pos,k,img): #img = img1
+    #配列の準備 
+    sort_pos = np.array([[0.]*3]*k)
+    sorted_pos = np.array([[0.]*3]*k)
+    displace_x = np.array([[0.]*k]*k)
+    displace_y = np.array([[0.]*k]*k)
+    displace_r = np.array([[0.]*k]*k)
+    
+    Each_coulomb_x = np.array([[0.]*k]*k)
+    Each_coulomb_y = np.array([[0.]*k]*k)
+    Coulomb_x = np.array([0.]*k)
+    Coulomb_y = np.array([0.]*k)
+    E_x = np.array([0.]*k)
+    E_y = np.array([0.]*k)
+    E = np.array([0.]*k)
+    
+    sort_pos = ion_pos[ion_pos[:,0].argsort(), :]
+    sorted_pos = sort_pos[-k:,0:2]
+    
+    #結果発表
+    print('number of ions is ' ,k)
+    print("[x,y,area]")
+    for i in sorted_pos:
+        print(i)
+        
+    np.set_printoptions(precision=4, floatmode='maxprec')
+
+    #各イオンにおける他イオンとの距離(µm)と各軸におけるCooulomb力
+    for i in range(0,k):
+        for j in range(0,k):
+            if i != j :         
+                x = (sorted_pos[i][0] - sorted_pos[j][0])*5.3/12.9
+                y = (sorted_pos[i][1] - sorted_pos[j][1])*5.3/12.9
+                displace_x[i][j] = x
+                displace_y[i][j] = y
+                displace_r[i][j] = np.sqrt(x*x + y*y)
+                #Each Coulomb force [N]
+                Each_coulomb_x[i][j] = A*(displace_x[i][j])/(displace_r[i][j])**3 * 10 **(12)
+                Each_coulomb_y[i][j] = A*(displace_y[i][j])/(displace_r[i][j])**3 * 10 **(12)
+    
+    for i in range(0,k):
+        for j in range(0,k):
+            Coulomb_x[i] = Coulomb_x[i] + Each_coulomb_x[i][j]
+            Coulomb_y[i] = Coulomb_y[i] + Each_coulomb_y[i][j]
+    
+    E_x = -Coulomb_x/e
+    E_y = -Coulomb_y/e
+    E = np.sqrt(E_x**2 + E_y**2)
+    
+    
+    for i in range(0,k):
+        cv2.arrowedLine(img,(int(sorted_pos[i][0]),int(sorted_pos[i][1])),(int(sorted_pos[i][0]+E_x[i]*2),int(sorted_pos[i][1]+E_y[i]*2)),(255,255,0),thickness = 3,tipLength = 0.3)
+       
+
+    #結果出力
+    print('distance between ions [µm]')
+    print(displace_r)
+    print('Coulomb force x [N]')
+    print(Each_coulomb_x)
+    print('Coulomb force y [N]')
+    print(Each_coulomb_y)
+    
+    print('sum coulomb force x[N]')
+    print(Coulomb_x)
+    print('sum coulomb force y[N]')
+    print(Coulomb_y)
+    
+    print('E x[V/m]')
+    print(E_x)
+    print('E y[V/m]')
+    print(E_y)
+    print('E [V/m]')
+    print(E)
+    
+    dst_img = image_origin.copy()
+    dst_img[ymin:ymax,xmin:xmax] = img
+    
+    cv2.imwrite('./out.jpg',img)
+    cv2.imwrite('./dst_img.jpg',dst_img)
+
+
+#イオンの検出
+def CountIons(img): #img = img1
     count_lst, hir_lst = cv2.findContours(image_binary, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-    #各イオンのデータを格納する配列の準備
-    ion_pos = np.array([[0]*3]*6)
-
-    img = image_origin
-    k=0 #count variable
+    #各イオンのデータを格納する配列の準備  
+    ion_pos = np.array([[0.]*3]*10)
+    
+    k=0 #count variable : イオンの個数
     
     for i, cnt in enumerate(count_lst):
             # 輪郭の面積を計算する。
@@ -78,35 +171,55 @@ def CountIons():
                 ion_pos[k][0] = int(x)
                 ion_pos[k][1] = int(y)
                 ion_pos[k][2] = area            
-                k=k+1                
-    #結果発表
-    print("[x,y,area]")
-    for i in ion_pos:
-        print(i)
-    #結果出力
-    cv2.imwrite('./JPEG/out.jpg',img)
+                k=k+1
+    
+    print(ion_pos)
+    ElectroField(ion_pos,k,img)
+    
     
 """
-start Main
+Main() {
 """
-image_origin = cv2.imread('./work/work.jpg')
-image_gray = rgb2gray(image_origin)
+#画像処理の範囲をイオン捕獲位置に絞る
+img1 = image_origin[ymin:ymax,xmin:xmax]
+
+#切り出す範囲
+rect_img = image_origin.copy()
+cv2.rectangle(rect_img,(xmax,ymax),(xmin,ymin),(0,255,0),2)
+cv2.imwrite('rect_img.jpg',rect_img)
+
+#切り出した範囲(img1)に対してそれぞれ処理を行う
+image_gray = rgb2gray(img1)
 image_hist_norm = hist_normalize(image_gray,a=0,b=255)
 image_binary = binary(image_hist_norm, thre)
 
-CountIons()
+CountIons(img1)
+
 """
-end Main
+}
 """
 
 
-#origin()
 
-### show HISTOGRAM
-#histogram(image_gray,image_hist_norm,image_binary)
 
-### show image
-#display(image_gray,image_hist_norm,image_binary)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+'''
+PLOT FUNCTION
+'''
+
 
 #diplay histogram
 def histogram(img1,img2,img3):
