@@ -13,7 +13,7 @@ GLOBAL VARIABLES
 circle_thre = 40 #threshold for determining number of ions
 thre = 120  #Threshold for binarization
 FontSize = 14 #For graph
-l=2 #File index (e.g.) -> files[l]
+l=4 #File index (e.g.) -> files[l]
 #setting ROI
 xmin,xmax = 0,1280
 ymin,ymax = 475 ,625
@@ -39,7 +39,7 @@ image_origin = cv2.imread('./origin_img.jpg')
 
 
 """
-Function
+FUNC 
 """
 #Gray Scale
 def rgb2gray(img):
@@ -216,15 +216,8 @@ CountIons(img1)
 
 
 
-
-
-
-
-
-
-
 '''
-PLOT FUNCTION
+PLOT FUNC
 '''
 
 
