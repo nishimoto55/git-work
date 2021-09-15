@@ -14,7 +14,7 @@ circle_thre = 40 #threshold for determining number of ions
 thre = 120  #Threshold for binarization
 FontSize = 14 #For graph
 l=2 #File index (e.g.) -> files[l]
-#ROI
+#setting ROI
 xmin,xmax = 0,1280
 ymin,ymax = 475 ,625
 #Physics Const.
@@ -22,19 +22,20 @@ e = 1.60217662 * 10 ** (-19)
 A = 2.30707757*10**(-28)
 
 
-#Loading Raw-File
+#Loading Raw-Files
 files = glob.glob('./TextImage/s*')
 
+#Print List of Files
 print('files is ...')
 for file in files:
     print(file)
 
-#textimage2jpg (one file only)
+#textimage 2 jpg (one file only)
 data = np.loadtxt(files[l])
-cv2.imwrite('./work/work.jpg',data)
+cv2.imwrite('./origin_img.jpg',data)
 
 #basis img
-image_origin = cv2.imread('./work/work.jpg')
+image_origin = cv2.imread('./origin_img.jpg')
 
 
 """
@@ -120,6 +121,7 @@ def ElectroField(ion_pos,k,img): #img = img1
        
 
     #結果出力
+    #クーロン相互作用(1対1)
     print('distance between ions [µm]')
     print(displace_r)
     print('Coulomb force x [N]')
@@ -127,22 +129,25 @@ def ElectroField(ion_pos,k,img): #img = img1
     print('Coulomb force y [N]')
     print(Each_coulomb_y)
     
+    #クーロン相互作用(1対その他)=注目するイオンが他のイオンから受けるクーロン力のx,y軸それぞれについての合計
     print('sum coulomb force x[N]')
     print(Coulomb_x)
     print('sum coulomb force y[N]')
     print(Coulomb_y)
     
+    #平衡の式よりイオン捕獲位置におけるx,y軸に関する電場
     print('E x[V/m]')
     print(E_x)
     print('E y[V/m]')
     print(E_y)
+    #イオン捕獲位置にかかる電場の大きさ．
     print('E [V/m]')
     print(E)
     
     dst_img = image_origin.copy()
     dst_img[ymin:ymax,xmin:xmax] = img
     
-    cv2.imwrite('./out.jpg',img)
+    cv2.imwrite('./out_img.jpg',img)
     cv2.imwrite('./dst_img.jpg',dst_img)
 
 
@@ -183,16 +188,18 @@ Main() {
 #画像処理の範囲をイオン捕獲位置に絞る
 img1 = image_origin[ymin:ymax,xmin:xmax]
 
-#切り出す範囲
+#切り出す範囲の明示
 rect_img = image_origin.copy()
 cv2.rectangle(rect_img,(xmax,ymax),(xmin,ymin),(0,255,0),2)
 cv2.imwrite('rect_img.jpg',rect_img)
 
 #切り出した範囲(img1)に対してそれぞれ処理を行う
+#グレースケール化，ヒストグラムの正規化，二値化
 image_gray = rgb2gray(img1)
 image_hist_norm = hist_normalize(image_gray,a=0,b=255)
 image_binary = binary(image_hist_norm, thre)
 
+#イオンの個数を計上し，その座標情報からイオン位置における電場の導出を行う
 CountIons(img1)
 
 """
