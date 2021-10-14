@@ -13,17 +13,17 @@ GLOBAL VARIABLES
 circle_thre = 40 #threshold for determining number of ions
 thre = 120  #Threshold for binarization
 FontSize = 14 #For graph
-l=4 #File index (e.g.) -> files[l]
+l=2 #File index (e.g.) -> files[l]
 #setting ROI
 xmin,xmax = 0,1280
-ymin,ymax = 475 ,625
+ymin,ymax = 450 ,625
 #Physics Const.
 e = 1.60217662 * 10 ** (-19)
 A = 2.30707757*10**(-28)
 
 
 #Loading Raw-Files
-files = glob.glob('./TextImage/s*')
+files = glob.glob('./TextImage/R*')
 
 #Print List of Files
 print('files is ...')
