@@ -10,10 +10,10 @@ import cv2
 GLOBAL VARIABLES
 """
 #definite const.
-circle_thre = 40 #threshold for determining number of ions
-thre = 120  #Threshold for binarization
+circle_thre = 10 #threshold for determining number of ions
+thre = 200  #Threshold for binarization
 FontSize = 14 #For graph
-l=2 #File index (e.g.) -> files[l]
+l=0 #File index (e.g.) -> files[l]
 #setting ROI
 xmin,xmax = 0,1280
 ymin,ymax = 450 ,625
@@ -23,7 +23,7 @@ A = 2.30707757*10**(-28)
 
 
 #Loading Raw-Files
-files = glob.glob('./TextImage/R*')
+files = glob.glob('./TextImage/1112*')
 
 #Print List of Files
 print('files is ...')
